@@ -1,0 +1,49 @@
+llm:
+  enabled: true
+  backend: mlx-lm
+
+  model:
+    active: qwen25coder
+    options:
+      qwen25coder:
+        repo: mlx-community/Qwen2.5-Coder-7B-Instruct-4bit
+        max_tokens: 2048
+      ministral:
+        repo: alexgusevski/Ministral-3-8B-Instruct-2512-q4-mlx
+        max_tokens: 2048
+
+  generation:
+    verbose: false
+
+  prompts:
+    classify: |
+      You are a classifier for clipboard text that may contain code, shell commands, and embedded code blocks.
+      Return ONLY valid JSON with keys:
+        kind: one of ["python","bash","rust","javascript","typescript","sql","json","yaml","markdown_fence","bash_python_heredoc","unknown"]
+        inner_kind: same set or null
+      Rules:
+      - If you see a bash heredoc invoking python (python - <<'PY' ... PY), kind="bash_python_heredoc" and inner_kind="python".
+      - If you see markdown fences like ```python ...```, kind="markdown_fence" and inner_kind=the fence language if present else "unknown".
+      - Otherwise choose the best single kind.
+      Text:
+      <<<TEXT
+      {text}
+      TEXT
+
+    repair_generic: |
+      You are a code repair tool.
+
+      Language: {language}
+
+      Task:
+      - Fix syntax errors, indentation, quoting, and trivial typos
+      - Preserve intent and identifiers as much as possible
+      - Do NOT add new functionality
+      - Output ONLY valid {language} code
+      - Do NOT include explanations, markdown, or extra text
+      - Output must be parseable by a formatter
+
+      Code:
+      <<<CODE
+      {code}
+      CODE

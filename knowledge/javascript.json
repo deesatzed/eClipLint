@@ -1,0 +1,67 @@
+{
+  "language": "javascript",
+  "description": "JavaScript/TypeScript code repair specialist",
+
+  "repair_prompt": "You are an expert JavaScript developer specializing in modern ES6+ code repair.\n\nYour mission: Fix syntax errors and apply JavaScript Standard Style best practices.\n\n## Common Syntax Errors to Fix\n\n1. **Missing semicolons**: Add where appropriate (consistent style)\n   - If code uses semicolons, add missing ones\n   - If code omits semicolons, keep consistent (ASI-safe)\n\n2. **Bracket matching**: Close all opening brackets/braces/parens\n   - `{ }` for objects and blocks\n   - `[ ]` for arrays\n   - `( )` for function calls and parameters\n\n3. **Quote consistency**: Fix mixed quotes\n   - Prefer single quotes: `'hello'` unless template literal needed\n   - Use backticks for template literals: `` `Hello ${name}` ``\n\n4. **Arrow function syntax**: Fix malformed arrows\n   - Correct: `(x) => x + 1` or `x => x + 1`\n   - Incorrect: `x -> x + 1`\n\n5. **Const/let/var**: Use modern declarations\n   - Prefer `const` for values that don't change\n   - Use `let` for values that change\n   - Avoid `var` (use `let` instead)\n\n## Modern JavaScript Best Practices\n\n- **Naming conventions**:\n  - camelCase for variables and functions: `userName`, `getUserData`\n  - PascalCase for classes: `UserAccount`, `APIHandler`\n  - UPPER_CASE for constants: `MAX_RETRIES`, `API_URL`\n\n- **Spacing**:\n  - Spaces around operators: `x = 1` not `x=1`\n  - Space after keywords: `if (x)` not `if(x)`\n  - Spaces in object literals: `{ a: 1, b: 2 }` not `{a:1,b:2}`\n\n- **Indentation**: 2 spaces (JavaScript standard)\n\n- **Prefer modern syntax**:\n  - Arrow functions: `const fn = (x) => x + 1`\n  - Template literals: `` `Hello ${name}` ``\n  - Destructuring: `const { x, y } = obj`\n  - Spread operator: `const arr2 = [...arr1]`\n\n- **Semicolons**: Consistent style (either always or never, prefer always for safety)\n\n## Critical Rules\n\n1. **Preserve logic**: Do NOT change what the code does\n2. **Keep names**: Do NOT rename unless fixing typos\n3. **Output only code**: No explanations, no markdown\n4. **Valid JavaScript**: Must be parseable and executable\n\n## Input Code\n\n```javascript\n{code}\n```\n\n## Fixed Code\n\nProvide ONLY the corrected JavaScript code below:",
+
+  "common_errors": [
+    {
+      "type": "SyntaxError",
+      "pattern": "Unexpected token",
+      "description": "Missing bracket, brace, or quote",
+      "fix": "Check for unclosed brackets/braces/quotes",
+      "example_broken": "const obj = { a: 1, b: 2",
+      "example_fixed": "const obj = { a: 1, b: 2 };"
+    },
+    {
+      "type": "SyntaxError",
+      "pattern": "Missing ) after argument list",
+      "description": "Unclosed function call",
+      "fix": "Add closing parenthesis",
+      "example_broken": "console.log('hello'",
+      "example_fixed": "console.log('hello');"
+    },
+    {
+      "type": "ReferenceError",
+      "pattern": "is not defined",
+      "description": "Variable used before declaration",
+      "fix": "Declare with const/let before use",
+      "example_broken": "console.log(x);",
+      "example_fixed": "const x = 1;\nconsole.log(x);"
+    }
+  ],
+
+  "style_rules": [
+    "Use 2 spaces for indentation",
+    "Use const for variables that don't change",
+    "Use let for variables that change (avoid var)",
+    "camelCase for variables/functions",
+    "PascalCase for classes",
+    "UPPER_CASE for constants",
+    "Spaces around operators: x = 1",
+    "Space after keywords: if (x), for (i)",
+    "Consistent semicolon usage (prefer always)",
+    "Single quotes for strings (unless template literal)",
+    "Use template literals for interpolation",
+    "Prefer arrow functions for callbacks",
+    "Trailing commas in multi-line arrays/objects"
+  ],
+
+  "test_cases": [
+    {
+      "broken": "const x=1\nif(x>0){\nconsole.log(x)\n}",
+      "fixed": "const x = 1;\nif (x > 0) {\n  console.log(x);\n}",
+      "errors": ["missing spaces", "missing semicolons"]
+    },
+    {
+      "broken": "function hello(name){\nreturn 'Hello, '+name\n}",
+      "fixed": "function hello(name) {\n  return `Hello, ${name}`;\n}",
+      "errors": ["use template literal", "missing semicolon"]
+    }
+  ],
+
+  "formatter_preferences": {
+    "primary": "prettier",
+    "config": "2 spaces, semicolons, single quotes"
+  }
+}

@@ -1,0 +1,14 @@
+[project]
+name = "clipfix"
+version = "0.3.0"
+requires-python = ">=3.10"
+dependencies = [
+  "pyperclip",
+  "pyyaml",
+  "mlx-lm",
+  "transformers",
+  "tokenizers",
+]
+
+[project.scripts]
+ecliplint = "clipfix.main:main"

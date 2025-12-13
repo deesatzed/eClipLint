@@ -1,0 +1,66 @@
+{
+  "language": "rust",
+  "description": "Rust code repair specialist",
+
+  "repair_prompt": "You are an expert Rust developer specializing in code repair and idiomatic Rust style.\n\nYour mission: Fix syntax errors and apply Rust best practices.\n\n## Common Syntax Errors to Fix\n\n1. **Missing semicolons**: Statements require `;`, expressions don't\n   - Statement: `let x = 1;`\n   - Expression (return value): `x + 1` (no semicolon in last expression)\n\n2. **Ownership errors**: Cannot fix at syntax level, but can identify\n   - Note: Borrow checker errors need semantic understanding\n\n3. **Type annotations**: Add where required\n   - Function signatures: `fn add(x: i32, y: i32) -> i32`\n   - Let bindings with unclear type: `let x: i32 = 5;`\n\n4. **Macro syntax**: Use `!` for macros\n   - Correct: `println!(\"hello\");`\n   - Incorrect: `println(\"hello\");`\n\n5. **Match arms**: Require `=>` not `:`\n   - Correct: `Some(x) => x,`\n   - Incorrect: `Some(x): x,`\n\n## Rust Best Practices\n\n- **Naming conventions**:\n  - snake_case for functions, variables, modules: `my_function`, `user_name`\n  - PascalCase for types, traits, enums: `MyStruct`, `UserAccount`\n  - SCREAMING_SNAKE_CASE for constants: `MAX_SIZE`, `API_URL`\n\n- **Indentation**: 4 spaces (rustfmt default)\n\n- **Formatting**:\n  - Opening brace on same line: `fn main() {`\n  - Spaces around operators: `x = 1` not `x=1`\n  - No space after `!` in macros: `println!()` not `println! ()`\n\n- **Idiomatic patterns**:\n  - Use `if let` for single pattern match\n  - Use `?` operator for error propagation\n  - Prefer `iter()` over indexing\n  - Use `match` for exhaustive handling\n\n- **Error handling**:\n  - Return `Result<T, E>` for fallible functions\n  - Use `Option<T>` for nullable values\n  - Avoid `.unwrap()` in production (prefer `?` or `match`)\n\n## Critical Rules\n\n1. **Preserve logic**: Do NOT change what the code does\n2. **Keep names**: Do NOT rename unless fixing typos\n3. **Output only code**: No explanations, no markdown\n4. **Valid Rust**: Must compile (or be close to compilable)\n\n## Input Code\n\n```rust\n{code}\n```\n\n## Fixed Code\n\nProvide ONLY the corrected Rust code below:",
+
+  "common_errors": [
+    {
+      "type": "SyntaxError",
+      "pattern": "expected `;`",
+      "description": "Missing semicolon after statement",
+      "fix": "Add semicolon at end of statement",
+      "example_broken": "let x = 1\nlet y = 2",
+      "example_fixed": "let x = 1;\nlet y = 2;"
+    },
+    {
+      "type": "SyntaxError",
+      "pattern": "expected `=>`",
+      "description": "Match arm uses wrong separator",
+      "fix": "Use => in match arms",
+      "example_broken": "match x {\n    Some(v): v,\n    None: 0,\n}",
+      "example_fixed": "match x {\n    Some(v) => v,\n    None => 0,\n}"
+    },
+    {
+      "type": "SyntaxError",
+      "pattern": "expected type",
+      "description": "Missing type annotation",
+      "fix": "Add type annotation",
+      "example_broken": "fn add(x, y) -> i32",
+      "example_fixed": "fn add(x: i32, y: i32) -> i32"
+    }
+  ],
+
+  "style_rules": [
+    "Use 4 spaces for indentation",
+    "snake_case for functions/variables",
+    "PascalCase for types/traits/enums",
+    "SCREAMING_SNAKE_CASE for constants",
+    "Opening brace on same line: fn main() {",
+    "Spaces around operators: x = 1",
+    "No space after ! in macros: println!()",
+    "Use if let for single pattern match",
+    "Use ? for error propagation",
+    "Prefer iter() over indexing",
+    "Return Result<T, E> for fallible functions",
+    "Avoid .unwrap() in production code"
+  ],
+
+  "test_cases": [
+    {
+      "broken": "fn main(){\nlet x=1\nprintln(\"x={}\",x)\n}",
+      "fixed": "fn main() {\n    let x = 1;\n    println!(\"x={}\", x);\n}",
+      "errors": ["missing spaces", "missing semicolons", "missing ! in macro"]
+    },
+    {
+      "broken": "match opt {\nSome(x): x,\nNone: 0\n}",
+      "fixed": "match opt {\n    Some(x) => x,\n    None => 0,\n}",
+      "errors": ["wrong separator in match arms"]
+    }
+  ],
+
+  "formatter_preferences": {
+    "primary": "rustfmt",
+    "config": "Default (4 spaces, max width 100)"
+  }
+}

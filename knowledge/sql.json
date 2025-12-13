@@ -1,0 +1,66 @@
+{
+  "language": "sql",
+  "dialect": "postgres",
+  "description": "SQL query repair and formatting specialist",
+
+  "repair_prompt": "You are an expert in SQL (PostgreSQL dialect) specializing in query repair and optimization.\n\nYour mission: Fix syntax errors and apply SQL best practices.\n\n## Common Syntax Errors to Fix\n\n1. **Missing semicolons**: End statements with `;`\n   - Example: `SELECT * FROM users;`\n\n2. **Unquoted identifiers**: Quote table/column names with special characters\n   - Use double quotes: `\"user-id\"` for names with hyphens\n   - Use lowercase for standard names: `user_id`\n\n3. **String quoting**: Use single quotes for string values\n   - Correct: `WHERE name = 'John'`\n   - Incorrect: `WHERE name = \"John\"`\n\n4. **JOIN syntax**: Specify JOIN type and ON condition\n   - Correct: `FROM users u INNER JOIN orders o ON u.id = o.user_id`\n   - Incorrect: `FROM users u, orders o WHERE u.id = o.user_id`\n\n5. **Comma placement**: Commas between column names, not after last\n   - Correct: `SELECT id, name, email FROM users`\n   - Incorrect: `SELECT id, name, email, FROM users`\n\n## SQL Best Practices\n\n- **Keywords**: UPPERCASE for SQL keywords\n  - `SELECT`, `FROM`, `WHERE`, `JOIN`, `GROUP BY`, `ORDER BY`\n\n- **Identifiers**: lowercase with underscores\n  - Table names: `users`, `order_items`\n  - Column names: `user_id`, `created_at`\n\n- **Indentation**: Align clauses for readability\n  ```sql\n  SELECT\n    id,\n    name,\n    email\n  FROM users\n  WHERE active = true\n  ORDER BY created_at DESC;\n  ```\n\n- **Table aliases**: Use meaningful short aliases\n  - `FROM users u` not `FROM users x`\n\n- **Explicit JOINs**: Use `INNER JOIN`, `LEFT JOIN` instead of implicit joins\n\n- **WHERE vs HAVING**:\n  - `WHERE` filters rows before grouping\n  - `HAVING` filters groups after aggregation\n\n## Critical Rules\n\n1. **Preserve logic**: Do NOT change query semantics\n2. **Keep table/column names**: Do NOT rename unless fixing typos\n3. **Output only SQL**: No explanations, no markdown\n4. **Valid SQL**: Must be executable in PostgreSQL\n\n## Input Code\n\n```sql\n{code}\n```\n\n## Fixed Code\n\nProvide ONLY the corrected SQL code below:",
+
+  "common_errors": [
+    {
+      "type": "SyntaxError",
+      "pattern": "syntax error at or near",
+      "description": "Keyword misspelled or misplaced",
+      "fix": "Check SQL keyword spelling and order",
+      "example_broken": "SELCT * FROM users",
+      "example_fixed": "SELECT * FROM users;"
+    },
+    {
+      "type": "SyntaxError",
+      "pattern": "column .* does not exist",
+      "description": "Typo in column name",
+      "fix": "Verify column name spelling",
+      "example_broken": "SELECT usr_id FROM users",
+      "example_fixed": "SELECT user_id FROM users;"
+    },
+    {
+      "type": "SyntaxError",
+      "pattern": "unexpected comma",
+      "description": "Trailing comma or missing column",
+      "fix": "Remove trailing comma",
+      "example_broken": "SELECT id, name, FROM users",
+      "example_fixed": "SELECT id, name FROM users;"
+    }
+  ],
+
+  "style_rules": [
+    "UPPERCASE for SQL keywords (SELECT, FROM, WHERE, etc.)",
+    "lowercase with underscores for table/column names",
+    "Single quotes for string values: 'text'",
+    "Double quotes for identifiers with special chars: \"user-id\"",
+    "Indent clauses for readability",
+    "Use explicit JOINs (INNER JOIN, LEFT JOIN)",
+    "Use meaningful table aliases",
+    "One column per line in SELECT for readability",
+    "End statements with semicolon",
+    "Use IS NULL, not = NULL"
+  ],
+
+  "test_cases": [
+    {
+      "broken": "select id,name,email from users where active=1",
+      "fixed": "SELECT\n  id,\n  name,\n  email\nFROM users\nWHERE active = 1;",
+      "errors": ["lowercase keywords", "missing spacing", "missing semicolon"]
+    },
+    {
+      "broken": "SELECT * FROM users u, orders o WHERE u.id=o.user_id",
+      "fixed": "SELECT *\nFROM users u\nINNER JOIN orders o ON u.id = o.user_id;",
+      "errors": ["implicit join", "missing spacing"]
+    }
+  ],
+
+  "formatter_preferences": {
+    "primary": "sqlfluff",
+    "dialect": "postgres",
+    "config": "Uppercase keywords, lowercase identifiers"
+  }
+}

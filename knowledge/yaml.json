@@ -1,0 +1,50 @@
+{
+  "language": "yaml",
+  "description": "YAML formatting specialist",
+
+  "repair_prompt": "You are an expert in YAML syntax and formatting.\n\nYour mission: Fix syntax errors and apply YAML best practices.\n\n## Common YAML Syntax Errors to Fix\n\n1. **Indentation errors**: YAML is whitespace-sensitive\n   - Use 2 spaces per indent level (never tabs)\n   - Consistent indentation at each level\n\n2. **Quote strings with special characters**:\n   - Quote strings containing: `: # { } [ ] , & * ! | > ' \" % @ \\``\n   - Example: `key: \"value:with:colons\"`\n\n3. **List syntax**: Either `-` or inline `[...]`\n   - Correct: `items:\\n  - item1\\n  - item2`\n   - Or: `items: [item1, item2]`\n\n4. **Dictionary syntax**: Either `key: value` or inline `{...}`\n   - Correct: `person:\\n  name: John\\n  age: 30`\n   - Or: `person: {name: John, age: 30}`\n\n5. **Boolean values**: Use `true`/`false` not `yes`/`no` (for clarity)\n   - Correct: `active: true`\n   - Avoid: `active: yes` (though valid, less clear)\n\n## YAML Best Practices\n\n- **Indentation**: 2 spaces per level (consistent)\n\n- **Quoting**:\n  - Quote strings with special YAML characters\n  - Quote strings that look like numbers/bools: `\"123\"`, `\"true\"`\n  - No quotes needed for simple alphanumeric strings\n\n- **Comments**: Use `#` for comments\n\n- **Multi-line strings**:\n  - Use `|` for literal block (preserves newlines)\n  - Use `>` for folded block (joins lines)\n\n- **Explicit types**: Use tags only when necessary\n  - Example: `!!str 123` to force string type\n\n## Critical Rules\n\n1. **Preserve structure**: Do NOT change data structure\n2. **Keep keys**: Do NOT rename unless fixing typos\n3. **Output only YAML**: No explanations, no markdown\n4. **Valid YAML**: Must parse successfully\n\n## Input Code\n\n```yaml\n{code}\n```\n\n## Fixed Code\n\nProvide ONLY the corrected YAML code below:",
+
+  "common_errors": [
+    {
+      "type": "IndentationError",
+      "pattern": "mapping values are not allowed here",
+      "description": "Indentation is incorrect",
+      "fix": "Use consistent 2-space indentation",
+      "example_broken": "person:\nname: John\n age: 30",
+      "example_fixed": "person:\n  name: John\n  age: 30"
+    },
+    {
+      "type": "SyntaxError",
+      "pattern": "could not find expected ':'",
+      "description": "Missing colon or improper quoting",
+      "fix": "Ensure key: value format, quote if contains special chars",
+      "example_broken": "key value",
+      "example_fixed": "key: value"
+    }
+  ],
+
+  "style_rules": [
+    "Use 2 spaces for indentation (never tabs)",
+    "Consistent indentation at each level",
+    "Quote strings with special characters",
+    "Use true/false for booleans (not yes/no)",
+    "Use # for comments",
+    "Use | for multi-line literal strings",
+    "Use > for multi-line folded strings",
+    "Lowercase keys for consistency",
+    "Space after colon: key: value"
+  ],
+
+  "test_cases": [
+    {
+      "broken": "person:\nname:John\nage:30",
+      "fixed": "person:\n  name: John\n  age: 30",
+      "errors": ["missing indentation", "missing space after colon"]
+    }
+  ],
+
+  "formatter_preferences": {
+    "primary": "ruamel.yaml",
+    "config": "2 spaces, preserve quotes"
+  }
+}

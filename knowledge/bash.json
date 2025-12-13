@@ -1,0 +1,64 @@
+{
+  "language": "bash",
+  "description": "Bash/shell script repair specialist",
+
+  "repair_prompt": "You are an expert in Bash scripting and shell best practices.\n\nYour mission: Fix syntax errors and apply shellcheck-recommended best practices.\n\n## Common Syntax Errors to Fix\n\n1. **Missing spaces in conditionals**: Spaces required around `[` and `]`\n   - Correct: `if [ \"$x\" = \"1\" ]; then`\n   - Incorrect: `if [\"$x\" = \"1\"]; then`\n\n2. **Unquoted variables**: Quote variables to prevent word splitting\n   - Correct: `echo \"$var\"`\n   - Incorrect: `echo $var`\n\n3. **Missing `then` or `do`**: Required keywords\n   - `if` requires `then`\n   - `for`/`while` requires `do`\n\n4. **Missing `fi`, `done`, `esac`**: Close control structures\n   - `if ... fi`\n   - `for/while ... done`\n   - `case ... esac`\n\n5. **Command substitution**: Use `$(...)` not backticks\n   - Correct: `output=$(command)`\n   - Incorrect: `output=\\`command\\``\n\n## Bash Best Practices\n\n- **Shebang**: Start with `#!/bin/bash` or `#!/usr/bin/env bash`\n\n- **Error handling**:\n  - Use `set -euo pipefail` for safer scripts\n  - `set -e`: Exit on error\n  - `set -u`: Exit on undefined variable\n  - `set -o pipefail`: Catch errors in pipes\n\n- **Quoting**:\n  - Always quote variables: `\"$var\"`\n  - Use single quotes for literal strings: `'literal'`\n  - Use double quotes for interpolation: `\"$var interpolated\"`\n\n- **Conditionals**:\n  - Use `[[ ]]` instead of `[ ]` (more features, safer)\n  - Example: `if [[ \"$x\" == \"value\" ]]; then`\n\n- **Indentation**: 2 spaces per level\n\n- **Function definition**:\n  - `function_name() { ... }` or `function function_name { ... }`\n\n## Critical Rules\n\n1. **Preserve logic**: Do NOT change what the script does\n2. **Keep structure**: Maintain original flow and variables\n3. **Output only code**: No explanations, no markdown\n4. **Valid Bash**: Must be executable with bash\n\n## Input Code\n\n```bash\n{code}\n```\n\n## Fixed Code\n\nProvide ONLY the corrected Bash code below:",
+
+  "common_errors": [
+    {
+      "type": "SyntaxError",
+      "pattern": "unexpected token",
+      "description": "Missing spaces, brackets, or keywords",
+      "fix": "Check conditional syntax and spacing",
+      "example_broken": "if [$x -eq 1]; then",
+      "example_fixed": "if [ \"$x\" -eq 1 ]; then"
+    },
+    {
+      "type": "RuntimeError",
+      "pattern": "unbound variable",
+      "description": "Variable used before being set",
+      "fix": "Initialize variable or remove set -u",
+      "example_broken": "echo $undefined_var",
+      "example_fixed": "undefined_var=\"\"\necho \"$undefined_var\""
+    },
+    {
+      "type": "SyntaxError",
+      "pattern": "unexpected end of file",
+      "description": "Missing fi, done, or esac",
+      "fix": "Close all control structures",
+      "example_broken": "if [ \"$x\" -eq 1 ]; then\n  echo \"yes\"",
+      "example_fixed": "if [ \"$x\" -eq 1 ]; then\n  echo \"yes\"\nfi"
+    }
+  ],
+
+  "style_rules": [
+    "Use #!/bin/bash or #!/usr/bin/env bash",
+    "Use set -euo pipefail for safety",
+    "Quote all variables: \"$var\"",
+    "Use [[ ]] instead of [ ] for conditionals",
+    "Use $(command) instead of backticks",
+    "2 spaces for indentation",
+    "snake_case for variable names",
+    "UPPER_CASE for environment variables",
+    "Use functions for repeated code",
+    "Check command success: if ! command; then"
+  ],
+
+  "test_cases": [
+    {
+      "broken": "if [$x -eq 1]\nthen\necho $x\nfi",
+      "fixed": "if [ \"$x\" -eq 1 ]; then\n  echo \"$x\"\nfi",
+      "errors": ["missing spaces around [", "unquoted variable"]
+    },
+    {
+      "broken": "for i in {1..5}\necho $i\ndone",
+      "fixed": "for i in {1..5}; do\n  echo \"$i\"\ndone",
+      "errors": ["missing do", "unquoted variable"]
+    }
+  ],
+
+  "formatter_preferences": {
+    "primary": "shfmt",
+    "config": "-i 2 -ci (2 spaces, indent case statements)"
+  }
+}

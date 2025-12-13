@@ -1,0 +1,81 @@
+{
+  "language": "python",
+  "version": "3.10+",
+  "description": "Python code repair and formatting specialist",
+
+  "repair_prompt": "You are an expert Python developer specializing in code repair and PEP 8 compliance.\n\nYour mission: Fix syntax errors and apply modern Python best practices.\n\n## Common Syntax Errors to Fix\n\n1. **IndentationError**: Use exactly 4 spaces per indent level (never tabs)\n   - Example: `if x:\\n    print(x)` not `if x:\\nprint(x)`\n\n2. **Missing colons**: Add `:` after if/for/while/def/class/try/except/with statements\n   - Example: `if x > 0:` not `if x > 0`\n\n3. **Quote consistency**: Fix mixed quotes, prefer single quotes for strings\n   - Example: `'hello'` not `\"hello\"` (unless string contains apostrophe)\n\n4. **Missing imports**: Add standard library imports when obvious\n   - Example: If using `sys.exit()`, add `import sys`\n\n5. **Parentheses/brackets**: Match opening/closing pairs\n\n## PEP 8 Style Guidelines\n\n- **Naming conventions**:\n  - snake_case for functions and variables: `my_function`, `user_name`\n  - PascalCase for classes: `MyClass`, `UserAccount`\n  - UPPER_CASE for constants: `MAX_SIZE`, `API_KEY`\n\n- **Spacing**:\n  - Spaces around operators: `x = 1` not `x=1`\n  - Spaces after commas: `[1, 2, 3]` not `[1,2,3]`\n  - No spaces inside brackets: `list[0]` not `list[ 0 ]`\n\n- **Line length**: Aim for 88 characters max (Black formatter default)\n\n- **Blank lines**:\n  - Two blank lines before top-level functions/classes\n  - One blank line between methods in a class\n  - One blank line to separate logical sections\n\n- **String formatting**: Prefer f-strings over `.format()` or `%`\n  - Example: `f'Hello {name}'` not `'Hello {}'.format(name)`\n\n## Critical Rules\n\n1. **Preserve original logic**: Do NOT change what the code does\n2. **Keep variable names**: Do NOT rename unless fixing obvious typos\n3. **Minimal changes**: Fix only what's broken, don't over-refactor\n4. **Output only code**: No explanations, no markdown, no comments about changes\n5. **Valid Python**: Output must be syntactically correct and executable\n\n## Input Code\n\n```python\n{code}\n```\n\n## Fixed Code\n\nProvide ONLY the corrected Python code below:",
+
+  "common_errors": [
+    {
+      "type": "IndentationError",
+      "pattern": "expected an indented block",
+      "description": "Missing or incorrect indentation after colon",
+      "fix": "Add 4 spaces before the next line",
+      "example_broken": "if x > 0:\nprint(x)",
+      "example_fixed": "if x > 0:\n    print(x)"
+    },
+    {
+      "type": "SyntaxError",
+      "pattern": "invalid syntax",
+      "description": "Missing colon, parenthesis, bracket, or quote",
+      "fix": "Check line-by-line for missing punctuation",
+      "example_broken": "if x > 0\n    print(x)",
+      "example_fixed": "if x > 0:\n    print(x)"
+    },
+    {
+      "type": "NameError",
+      "pattern": "name '.*' is not defined",
+      "description": "Variable or module used before definition",
+      "fix": "Add import or define variable first",
+      "example_broken": "sys.exit(0)",
+      "example_fixed": "import sys\n\nsys.exit(0)"
+    },
+    {
+      "type": "TabError",
+      "pattern": "inconsistent use of tabs and spaces",
+      "description": "Mixed tabs and spaces",
+      "fix": "Convert all tabs to 4 spaces",
+      "example_broken": "def foo():\n\treturn 1",
+      "example_fixed": "def foo():\n    return 1"
+    }
+  ],
+
+  "style_rules": [
+    "Use 4 spaces for indentation (never tabs)",
+    "Maximum line length 88 characters",
+    "Two blank lines before top-level functions/classes",
+    "One blank line between class methods",
+    "snake_case for functions/variables",
+    "PascalCase for classes",
+    "UPPER_CASE for constants",
+    "Spaces around operators: x = 1, not x=1",
+    "Spaces after commas: [1, 2, 3]",
+    "Use f-strings for formatting: f'{x}' not '{}'.format(x)",
+    "Single quotes for strings (unless apostrophe inside)",
+    "Trailing comma in multi-line lists/dicts"
+  ],
+
+  "test_cases": [
+    {
+      "broken": "x=1\n if x>0:\nprint(x)",
+      "fixed": "x = 1\nif x > 0:\n    print(x)",
+      "errors": ["spacing around =", "incorrect indentation", "spacing around >"]
+    },
+    {
+      "broken": "def hello(name):\nreturn 'Hello, '+name",
+      "fixed": "def hello(name):\n    return f'Hello, {name}'",
+      "errors": ["missing indentation", "use f-string"]
+    },
+    {
+      "broken": "for i in range(10)\n    if i%2==0:\n        print(i)",
+      "fixed": "for i in range(10):\n    if i % 2 == 0:\n        print(i)",
+      "errors": ["missing colon after for", "spacing around %"]
+    }
+  ],
+
+  "formatter_preferences": {
+    "primary": "ruff",
+    "secondary": "black",
+    "fallback": "autopep8"
+  }
+}

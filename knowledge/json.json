@@ -1,0 +1,47 @@
+{
+  "language": "json",
+  "description": "JSON formatting specialist (no repair needed - formatter handles)",
+
+  "repair_prompt": "You are a JSON syntax expert.\n\nYour mission: Fix JSON syntax errors to make it valid.\n\n## Common JSON Syntax Errors to Fix\n\n1. **Trailing commas**: Remove commas after last item\n   - Invalid: `{\"a\": 1, \"b\": 2,}`\n   - Valid: `{\"a\": 1, \"b\": 2}`\n\n2. **Single quotes**: Use double quotes only\n   - Invalid: `{'a': 1}`\n   - Valid: `{\"a\": 1}`\n\n3. **Unquoted keys**: Keys must be quoted\n   - Invalid: `{a: 1}`\n   - Valid: `{\"a\": 1}`\n\n4. **Missing commas**: Between array/object items\n   - Invalid: `{\"a\": 1 \"b\": 2}`\n   - Valid: `{\"a\": 1, \"b\": 2}`\n\n5. **Comments not allowed**: Remove // or /* */ comments\n   - JSON does not support comments\n\n## JSON Rules\n\n- **Double quotes**: Always use `\"` not `'`\n- **No trailing commas**: Last item has no comma\n- **No comments**: Remove all comments\n- **Valid types**: string, number, boolean, null, array, object\n- **Escape special characters**: Use `\\\"`, `\\\\`, `\\n`, etc.\n\n## Critical Rules\n\n1. **Preserve data**: Do NOT change values\n2. **Output only JSON**: No explanations, no markdown\n3. **Valid JSON**: Must parse with JSON.parse()\n\n## Input Code\n\n```json\n{code}\n```\n\n## Fixed Code\n\nProvide ONLY the corrected JSON code below:",
+
+  "common_errors": [
+    {
+      "type": "SyntaxError",
+      "pattern": "Unexpected token",
+      "description": "Trailing comma or syntax error",
+      "fix": "Remove trailing commas, ensure proper quoting",
+      "example_broken": "{\"a\": 1, \"b\": 2,}",
+      "example_fixed": "{\"a\": 1, \"b\": 2}"
+    },
+    {
+      "type": "SyntaxError",
+      "pattern": "Unexpected string",
+      "description": "Missing comma between items",
+      "fix": "Add comma between items",
+      "example_broken": "{\"a\": 1 \"b\": 2}",
+      "example_fixed": "{\"a\": 1, \"b\": 2}"
+    }
+  ],
+
+  "style_rules": [
+    "Use double quotes for strings",
+    "No trailing commas",
+    "No comments",
+    "Indent with 2 spaces",
+    "One line per item for readability",
+    "Space after colon: \"key\": value"
+  ],
+
+  "test_cases": [
+    {
+      "broken": "{'a':1,'b':2,}",
+      "fixed": "{\"a\": 1, \"b\": 2}",
+      "errors": ["single quotes", "trailing comma"]
+    }
+  ],
+
+  "formatter_preferences": {
+    "primary": "json.dumps",
+    "config": "indent=2, ensure_ascii=False"
+  }
+}
