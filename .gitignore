@@ -38,6 +38,12 @@ env/
 target/
 build/*/
 
+# Build artifacts (binaries)
+clipfix
+ecliplint
+run_clipfix.sh
+run_ecliplint.sh
+
 # Local config
 .env
 .env.local

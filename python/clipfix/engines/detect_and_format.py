@@ -84,30 +84,34 @@ def _detect_kind(text: str) -> str:
     t = text.strip()
     low = t.lower()
 
-    # 1) Strong Python signals FIRST
-    if "import " in low or "from " in low and " import " in low:
-        return "python"
-
-    # 2) JSON
+    # 1) JSON (try parsing first - most specific)
     try:
         json.loads(t)
         return "json"
     except Exception:
         pass
 
-    # 3) Bash
+    # 2) Strong Python signals
+    if "import " in low or ("from " in low and " import " in low):
+        return "python"
+
+    # 3) JavaScript/TypeScript (check BEFORE general keywords)
+    # Strong JS signals: const, let, var, arrow functions
+    if any(kw in low for kw in ["const ", "let ", "var ", " => "]):
+        return "javascript"
+    if "interface " in t or ": string" in t or ": number" in t:
+        return "typescript"
+    # Weaker signals (after checking const/let/var)
+    if "function" in low:
+        return "javascript"
+
+    # 4) Bash
     if low.startswith("#!/bin/bash") or "set -e" in low or low.startswith("pythonpath="):
         return "bash"
 
-    # 4) Rust
-    if "fn main" in low or "use std::" in low:
+    # 5) Rust
+    if "fn main" in low or "use std::" in low or "impl " in low:
         return "rust"
-
-    # 5) TypeScript / JS
-    if "interface " in t or ": string" in t:
-        return "typescript"
-    if "function" in low or "=>" in t:
-        return "javascript"
 
     # 6) SQL (LAST, weakest heuristic)
     if any(x in low for x in ["select ", " join ", " where "]):

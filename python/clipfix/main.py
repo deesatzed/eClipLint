@@ -7,6 +7,8 @@ import pyperclip
 
 from clipfix.engines.history import push_history, undo_history
 from clipfix.engines.detect_and_format import process_text
+from clipfix.engines.segmenter import regex_segment
+from clipfix.engines.detect_and_format import _detect_kind
 
 
 def print_diff(before: str, after: str):
@@ -40,6 +42,82 @@ def print_diff(before: str, after: str):
                 print(line, end="")
         else:
             print(line, end="")
+
+
+def detect_language_for_comments(text: str) -> str:
+    """
+    Quick language detection for comment syntax.
+
+    Args:
+        text: Code snippet
+
+    Returns:
+        str: Language name (python, javascript, bash, etc.)
+    """
+    segs = regex_segment(text)
+    if segs:
+        seg = segs[0]
+        detected = seg.inner_kind or _detect_kind(seg.text)
+        return detected.lower()
+
+    return "python"  # Default fallback
+
+
+def format_error_comment(error_msg: str, original_code: str, language: str = "python") -> str:
+    """
+    Prepend error message as comment to original code.
+
+    Args:
+        error_msg: Error message from formatter/repair
+        original_code: Original broken code
+        language: Detected language (for comment syntax)
+
+    Returns:
+        str: Original code with error comment prepended
+    """
+    # Choose comment syntax based on language
+    comment_styles = {
+        "python": "#",
+        "javascript": "//",
+        "typescript": "//",
+        "js": "//",
+        "ts": "//",
+        "bash": "#",
+        "sh": "#",
+        "shell": "#",
+        "sql": "--",
+        "rust": "//",
+        "yaml": "#",
+        "json": "",  # JSON doesn't support comments
+    }
+
+    comment = comment_styles.get(language, "#")
+
+    # Build error message
+    if language == "json":
+        # Special case: JSON (no comments allowed)
+        lines = [
+            "/* ❌ eClipLint: Repair failed */",
+            "/* Note: This is invalid JSON (comments not allowed in JSON) */",
+            f"/* Error: {error_msg} */",
+            "/* Fix the code manually and remove these comments */",
+            "",
+        ]
+    else:
+        lines = [
+            f"{comment} ❌ eClipLint: Repair failed",
+            f"{comment} Error: {error_msg}",
+            f"{comment}",
+            f"{comment} The AI could not fix this code. Common reasons:",
+            f"{comment} - Code is incomplete (missing closing brackets/braces/parentheses)",
+            f"{comment} - Syntax error is too complex for automated repair",
+            f"{comment} - Code may require human review and context",
+            f"{comment}",
+            f"{comment} Original code preserved below:",
+            f"{comment}",
+        ]
+
+    return "\n".join(lines) + "\n" + original_code
 
 
 def print_success(before: str, after: str, mode: str):
@@ -100,9 +178,18 @@ def main(argv=None):
         print("✖ ecliplint: clipboard empty", file=sys.stderr)
         return 1
 
+    # Detect language before processing (for error comment syntax)
+    detected_lang = detect_language_for_comments(raw)
+
     ok, out, mode = process_text(raw, allow_llm=(not args.no_llm))
     if not ok:
+        # Add error comment to clipboard
+        error_with_code = format_error_comment(mode, raw, detected_lang)
+        pyperclip.copy(error_with_code)
+
+        # Print error to stderr
         print(f"✖ ecliplint failed: {mode}", file=sys.stderr)
+        print(f"⚠ Error message added to clipboard as comment", file=sys.stderr)
         return 2
 
     # Diff mode: show changes without modifying clipboard
