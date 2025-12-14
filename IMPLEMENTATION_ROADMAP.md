@@ -35,7 +35,7 @@
 
 ---
 
-## Future Release: v1.2.0 (Long-term)
+## Future Release: v1.2.0 (Knowledge Accumulation)
 
 ### Knowledge Accumulation System (VAMS-Inspired)
 
@@ -79,6 +79,57 @@
 
 ---
 
+## Future Release: v1.3.0 (Cloud Mode)
+
+### OpenRouter Integration for Non-Proprietary Code
+
+**Status**: Fully designed, ready for implementation
+
+**See**: `CLOUD_MODE_DESIGN.md` for complete design
+
+**Key Features**:
+1. **Two-Tier System**
+   - Local mode (⌘⇧F): Private, proprietary code
+   - Cloud mode (⌘⇧G): Powerful models, non-proprietary code
+
+2. **OpenRouter Client** (`cloud/openrouter_client.py`)
+   - Claude 4.5 Sonnet, GPT-4o, DeepSeek Coder V3
+   - Models updated weekly automatically
+   - Fallback chain for reliability
+
+3. **Intelligent Model Selection** (`cloud/model_selector.py`)
+   - Complexity-based model selection
+   - Cost optimization (simple → DeepSeek, complex → Claude)
+   - Automatic fallback chain
+
+4. **Enhanced Learning System** (Cloud mode only)
+   - Pattern extraction from cloud repairs
+   - VAMS-inspired accumulation
+   - Privacy-safe (abstract patterns, secret detection)
+   - Quality improvement tracking
+
+**Benefits**:
+- Superior quality for complex bugs (Claude 4.5 Sonnet)
+- Self-improving AI from cloud repairs
+- Always up-to-date (OpenRouter weekly updates)
+- Cost-effective (~$0.03/repair average)
+- Explicit opt-in (different hotkey for intentional choice)
+
+**Implementation Timeline**: 3-4 weeks
+- Week 1: OpenRouter client + basic cloud mode
+- Week 2: Model selection + fallback chain
+- Week 3: Learning system integration
+- Week 4: Cost tracking + usage dashboard
+
+**Privacy Guardrails**:
+- Disabled by default (explicit opt-in)
+- Different hotkey (⌘⇧G) for intentional choice
+- Visual feedback (☁️ eClipLint (cloud))
+- Secret detection (never learn from passwords/API keys)
+- Pattern abstraction (no actual code stored)
+
+---
+
 ## Future Release: v2.0.0 (Cross-Platform)
 
 ### Platform Support
@@ -110,6 +161,9 @@
 - ✅ IMPROVEMENTS_SUMMARY.md - Recent improvements
 - ✅ KNOWLEDGE_ACCUMULATION.md - Learning system design
 - ✅ VAMS_INSPIRED_LEARNING.md - VAMS techniques applied
+- ✅ CLOUD_MODE_DESIGN.md - OpenRouter integration design
+- ✅ BLOG_POST.md - Marketing content for developers
+- ✅ TWITTER_THREAD.md - Social media marketing
 
 ### Planned
 - [ ] Video tutorials (YouTube)
@@ -158,6 +212,15 @@ github.com/deesatzed/eClipLint-patterns/
 - [ ] <10ms learning overhead
 - [ ] 0 privacy violations (audited)
 
+### v1.3.0 Success Metrics (Cloud Mode)
+- [ ] OpenRouter API integration working
+- [ ] Intelligent model selection (complexity-based)
+- [ ] Fallback chain reliable (>99% uptime)
+- [ ] Learning from cloud repairs (pattern extraction)
+- [ ] Cost tracking accurate (usage dashboard)
+- [ ] Privacy guardrails enforced (secret detection)
+- [ ] Average cost <$0.05/repair
+
 ### v2.0.0 Success Metrics (Cross-Platform)
 - [ ] Intel Mac support working
 - [ ] Linux version functional
@@ -201,6 +264,12 @@ github.com/deesatzed/eClipLint-patterns/
 2. Confidence threshold values? (0.85/0.65/0.45 recommended)
 3. Opt-in or opt-out by default? (Opt-in for privacy)
 
+### For v1.3.0 (Cloud Mode)
+1. Which models to prioritize? (Claude 4.5 Sonnet + GPT-4o + DeepSeek recommended)
+2. Default complexity thresholds? (0.7/0.5/0.3 recommended)
+3. Cost limits and warnings? (e.g., warn at $10/month)
+4. Hotkey for cloud mode? (⌘⇧G recommended, distinct from local ⌘⇧F)
+
 ### For v2.0.0
 1. Which LLM backend for Intel/Linux? (transformers recommended)
 2. Watch mode polling interval? (500ms recommended)
@@ -216,10 +285,16 @@ github.com/deesatzed/eClipLint-patterns/
 - **Breaking changes**: None
 
 ### v1.2.0 (Knowledge Accumulation)
-- **Time**: 4 weeks
 - **Storage**: ~5-10MB per language (patterns)
 - **Performance impact**: <10ms per repair
 - **Breaking changes**: None (additive)
+
+### v1.3.0 (Cloud Mode)
+- **External dependency**: OpenRouter API (requires API key)
+- **Cost**: ~$5-10/month for 200-400 repairs
+- **Storage**: ~10-20MB (learned patterns from cloud repairs)
+- **Performance impact**: 5-15 seconds per repair (network latency)
+- **Breaking changes**: None (opt-in feature)
 
 ### v2.0.0
 - **Time**: 8-12 weeks
@@ -268,11 +343,13 @@ black --check python/clipfix
 - Multiple languages supported (10+)
 
 **Differentiation**:
-- ✅ Fully local (no cloud, privacy-first)
+- ✅ Fully local by default (privacy-first)
+- ✅ Optional cloud mode (for non-proprietary code)
 - ✅ Language specialists (not generic AI)
 - ✅ Self-improving (learns from your repairs)
 - ✅ Community-driven (editable JSON knowledge)
 - ✅ Hotkey workflow (zero context switching)
+- ✅ Always up-to-date models (OpenRouter weekly updates)
 
 ---
 
@@ -280,16 +357,20 @@ black --check python/clipfix
 
 **Current**: v1.0.0 (Multi-agent architecture released)
 
-**Next**: v1.1.0 (Testing + UX improvements, 2-3 weeks)
+**Next**: v1.1.0 (Testing + UX improvements)
 
-**Future**: v1.2.0 (VAMS-inspired learning, 4 weeks)
-
-**Long-term**: v2.0.0 (Cross-platform, 8-12 weeks)
+**Future Releases**:
+- v1.2.0 (VAMS-inspired learning)
+- v1.3.0 (Cloud mode with OpenRouter)
+- v2.0.0 (Cross-platform)
 
 **See Also**:
-- `VAMS_INSPIRED_LEARNING.md` - Knowledge accumulation design
+- `CODEBASE_ANALYSIS.md` - Architecture deep dive
+- `VAMS_INSPIRED_LEARNING.md` - Knowledge accumulation design (v1.2.0)
+- `CLOUD_MODE_DESIGN.md` - OpenRouter integration design (v1.3.0)
 - `PROMPT_OPTIMIZATION.md` - Quality measurement system
 - `HOTKEY_SETUP.md` - Hotkey configuration guide
-- `CODEBASE_ANALYSIS.md` - Architecture deep dive
+- `BLOG_POST.md` - Developer marketing content
+- `TWITTER_THREAD.md` - Social media marketing
 
 **Status**: Active development, quality-first approach
