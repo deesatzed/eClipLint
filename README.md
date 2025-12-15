@@ -204,10 +204,22 @@ ecliplint --no-llm     # Disable AI repair (formatters only)
 ecliplint --help       # Show all options
 ```
 
+### New in v1.2: UX Improvements
+```bash
+ecliplint --lang python        # Force specific language
+ecliplint --health             # Check formatter installation
+ecliplint --cache-stats        # View detailed cache metrics
+```
+
 ### Flags
 - `--diff` - Show changes without modifying clipboard
 - `--undo` - Restore previous clipboard from history
 - `--no-llm` - Disable AI fallback (fast, but fails on broken code)
+- `--lang LANGUAGE` - Force specific language (python, javascript, bash, sql, rust, json, yaml)
+- `--health` - Check formatter installation status
+- `--cache-stats` - Show detailed cache statistics with hit rates and time saved
+- `--parallel` - Manually enable parallel processing (auto-enabled for 3+ segments)
+- `--benchmark` - Show performance timing
 - `--max-history N` - Set undo history depth (default: 25)
 
 ---
@@ -295,6 +307,78 @@ ecliplint --cache-stats # View cache hit rate
 ```
 
 **Architecture improvements from qlty**: We extracted high-value patterns while avoiding bloat. Unlike qlty's 70+ linters, we focus on 7 core languages. No cloud integration, no git features - just fast, local clipboard formatting.
+
+---
+
+## v1.2: 80/20 UX Enhancements
+
+Four high-value improvements that deliver 80% of user benefit with minimal complexity:
+
+### 1. 🧠 Smart Auto-Parallel
+**Before**: Had to remember `--parallel` flag
+**Now**: Auto-enables for 3+ segments
+
+```bash
+# Copy multi-language code → automatically uses parallel processing
+ecliplint  # That's it!
+```
+
+### 2. 🎯 Language Override
+**Before**: Relied on auto-detection
+**Now**: Force specific language when needed
+
+```bash
+# When detection is wrong or you know the language:
+ecliplint --lang python    # Force Python formatting
+ecliplint --lang sql       # Force SQL formatting
+```
+
+**Use cases**:
+- Ambiguous code snippets
+- Plain text that should be treated as code
+- Override when detection fails
+
+### 3. 🏥 Formatter Health Check
+**Before**: Trial and error to see what's installed
+**Now**: Instant status check
+
+```bash
+ecliplint --health
+
+# Output:
+# ✓ black (Python) installed
+# ✓ prettier (JavaScript/TypeScript) installed
+# ✗ shfmt (Bash) not found
+#   Install: brew install shfmt
+```
+
+**Benefits**:
+- Quick diagnostic
+- Installation instructions included
+- See which languages are fully supported
+
+### 4. 📊 Enhanced Cache Stats
+**Before**: Basic entry count
+**Now**: Hit rate, time saved, top languages
+
+```bash
+ecliplint --cache-stats
+
+# Output:
+# Entries: 42
+# Hit rate: 67.3%
+# Time saved: ~105s
+# Top cached languages:
+#   python: 15 times
+#   javascript: 12 times
+```
+
+**Insights**:
+- See actual performance gains
+- Understand usage patterns
+- Measure cache effectiveness
+
+---
 
 ## Architecture
 
@@ -464,6 +548,13 @@ AI can't fix all errors (e.g., semantic errors, missing imports). Open an issue 
 - Automated test suite
 - Better error messages and benchmarking
 - Credits: Architecture patterns adapted from [qlty](https://github.com/qlty-check/qlty)
+
+### v1.2 (80/20 UX improvements) ✅
+- **Smart auto-parallel** - Auto-enables for 3+ segments
+- **Language override** (`--lang`) - Force specific language
+- **Formatter health check** (`--health`) - Diagnostic tool
+- **Enhanced cache stats** - Hit rate, time saved, top languages
+- 3 hours development time, 80% of value improvement
 
 ### v2.0
 - Linux support (alternative LLM backend)

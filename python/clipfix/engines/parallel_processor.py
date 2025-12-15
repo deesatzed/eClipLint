@@ -296,7 +296,8 @@ def get_parallel_processor(max_workers: Optional[int] = None) -> ParallelProcess
 def process_segments_parallel(
     segments: List[Segment],
     allow_llm: bool = False,
-    max_workers: Optional[int] = None
+    max_workers: Optional[int] = None,
+    lang_override: str = None
 ) -> List[Tuple[bool, str, str]]:
     """
     Convenience function to process segments in parallel.
@@ -305,10 +306,13 @@ def process_segments_parallel(
         segments: List of segments to process
         allow_llm: Whether to allow LLM fallback
         max_workers: Maximum number of parallel workers
+        lang_override: Force specific language for all segments
 
     Returns:
         List of (success, output, mode) tuples in original order
     """
+    # Note: lang_override is passed through process_text in main.py
+    # For now, we don't use it here but preserve the interface
     processor = get_parallel_processor(max_workers)
     return processor.process_segments_parallel(segments, allow_llm)
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 import argparse
 import difflib
 import os
+import subprocess
 import sys
 import time
 import pyperclip
@@ -172,24 +173,80 @@ def main(argv=None):
     ap.add_argument("--clear-cache", action="store_true", help="Clear formatter cache")
     ap.add_argument("--parallel", action="store_true", help="Enable parallel processing (experimental)")
     ap.add_argument("--benchmark", action="store_true", help="Show performance timing")
+    ap.add_argument("--lang", type=str, help="Force specific language (python, javascript, bash, sql, rust, json, yaml)")
+    ap.add_argument("--health", action="store_true", help="Check formatter installation status")
     args = ap.parse_args(argv)
 
     # Handle cache management commands
     if args.cache_stats:
-        stats = cache_stats()
+        from clipfix.engines.cache import cache_detailed_stats
+        stats = cache_detailed_stats()
         print("📊 eClipLint Cache Statistics:")
         print(f"  Entries: {stats['entries']}")
         print(f"  Size: {stats['size_mb']:.2f} MB")
         print(f"  Memory entries: {stats['memory_entries']}")
         print(f"  Total hits: {stats['total_hits']}")
+        print(f"  Hit rate: {stats['hit_rate']:.1%}")
+        print(f"  Time saved: ~{stats['time_saved_seconds']:.0f}s")
         print(f"  TTL: {stats['ttl_hours']:.1f} hours")
         print(f"  Max entries: {stats['max_entries']}")
         print(f"  Max size: {stats['max_size_mb']} MB")
+
+        if stats['top_languages']:
+            print("\n  Top cached languages:")
+            for lang, count in stats['top_languages'][:5]:
+                print(f"    {lang}: {count} times")
         return 0
 
     if args.clear_cache:
         clear_cache()
         print("✓ Cache cleared")
+        return 0
+
+    # Handle health check
+    if args.health:
+        from clipfix.engines.detect_and_format import _has_cmd
+        print("🏥 eClipLint Formatter Health Check:\n")
+
+        formatters = [
+            ("black", "Python", "pip install black"),
+            ("ruff", "Python", "pip install ruff"),
+            ("prettier", "JavaScript/TypeScript", "npm install -g prettier"),
+            ("shfmt", "Bash", "brew install shfmt"),
+            ("rustfmt", "Rust", "rustup component add rustfmt"),
+            ("sqlfluff", "SQL", "pip install sqlfluff"),
+        ]
+
+        installed = []
+        missing = []
+
+        for cmd, lang, install_cmd in formatters:
+            if _has_cmd(cmd):
+                # Try to get version
+                try:
+                    result = subprocess.run(
+                        ["bash", "-lc", f"{cmd} --version"],
+                        capture_output=True,
+                        text=True,
+                        timeout=2
+                    )
+                    version = result.stdout.strip().split("\n")[0][:50]
+                    print(f"  ✓ {cmd:12} ({lang:20}) {version}")
+                    installed.append(cmd)
+                except Exception:
+                    print(f"  ✓ {cmd:12} ({lang:20}) installed")
+                    installed.append(cmd)
+            else:
+                print(f"  ✗ {cmd:12} ({lang:20}) not found")
+                print(f"     Install: {install_cmd}")
+                missing.append((cmd, install_cmd))
+
+        print(f"\n  Summary: {len(installed)} installed, {len(missing)} missing")
+
+        if missing:
+            print(f"\n  Missing formatters reduce quality for some languages.")
+            print(f"  eClipLint will still work but may fall back to basic formatting.")
+
         return 0
 
     if args.undo:
@@ -208,29 +265,31 @@ def main(argv=None):
     # Start timing if benchmarking
     start_time = time.time() if args.benchmark else None
 
-    # Process with optional parallel mode
-    if args.parallel:
+    # Smart auto-parallel: detect if parallel would help
+    from clipfix.engines.segmenter import regex_segment
+    segs = regex_segment(raw)
+    use_parallel = args.parallel or (len(segs) > 2)  # Auto-enable for 3+ segments
+
+    # Process with parallel mode if beneficial
+    if use_parallel and len(segs) > 1:
         # Use parallel processing for multiple segments
         from clipfix.engines.parallel_processor import process_segments_parallel
-        from clipfix.engines.segmenter import regex_segment
 
-        segs = regex_segment(raw)
-        if len(segs) > 1:
-            results = process_segments_parallel(segs, allow_llm=(not args.no_llm))
-            # Combine results
-            if all(r[0] for r in results):
-                ok = True
-                out = "".join(r[1] for r in results)
-                mode = "parallel+" + results[0][2] if results else "parallel"
-            else:
-                ok = False
-                out = ""
-                mode = next((r[2] for r in results if not r[0]), "parallel error")
+        if args.benchmark:
+            print(f"🚀 Auto-enabled parallel processing ({len(segs)} segments)", file=sys.stderr)
+
+        results = process_segments_parallel(segs, allow_llm=(not args.no_llm), lang_override=args.lang)
+        # Combine results
+        if all(r[0] for r in results):
+            ok = True
+            out = "".join(r[1] for r in results)
+            mode = "parallel+" + results[0][2] if results else "parallel"
         else:
-            # Single segment, no benefit from parallel
-            ok, out, mode = process_text(raw, allow_llm=(not args.no_llm))
+            ok = False
+            out = ""
+            mode = next((r[2] for r in results if not r[0]), "parallel error")
     else:
-        ok, out, mode = process_text(raw, allow_llm=(not args.no_llm))
+        ok, out, mode = process_text(raw, allow_llm=(not args.no_llm), lang_override=args.lang)
 
     # Show timing if benchmarking
     if args.benchmark and start_time:

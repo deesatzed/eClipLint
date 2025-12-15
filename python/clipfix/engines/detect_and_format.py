@@ -128,13 +128,17 @@ def _detect_kind(text: str) -> str:
     # Default
     return "python"
 
-def process_text(text: str, allow_llm: bool) -> tuple[bool, str, str]:
+def process_text(text: str, allow_llm: bool, lang_override: str = None) -> tuple[bool, str, str]:
     segs = regex_segment(text)
     out_parts = []
     mode = "formatted"
 
     for seg in segs:
-        kind = seg.inner_kind or (seg.kind if seg.kind not in ("raw",) else _detect_kind(seg.text))
+        # Use language override if provided
+        if lang_override:
+            kind = lang_override.lower()
+        else:
+            kind = seg.inner_kind or (seg.kind if seg.kind not in ("raw",) else _detect_kind(seg.text))
 
         # LLM classify if still ambiguous
         if allow_llm and (kind in ("unknown", "raw", "") or kind not in ("python","bash","rust","javascript","typescript","sql","json","yaml")):

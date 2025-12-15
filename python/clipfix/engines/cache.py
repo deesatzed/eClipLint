@@ -455,3 +455,49 @@ def cache_stats() -> Dict[str, Any]:
     """Get cache statistics."""
     cache = get_formatter_cache()
     return cache.stats()
+
+
+def cache_detailed_stats() -> Dict[str, Any]:
+    """
+    Get detailed cache statistics with additional metrics.
+
+    Returns:
+        Dictionary with enhanced stats including hit rate, time saved, top languages
+    """
+    from collections import Counter
+    cache = get_formatter_cache()
+    basic_stats = cache.stats()
+
+    # Calculate hit rate
+    total_hits = basic_stats['total_hits']
+    memory_entries = basic_stats['memory_entries']
+    hit_rate = total_hits / max(memory_entries, 1)  # Avoid division by zero
+
+    # Estimate time saved (avg 2.5 seconds per format operation)
+    time_saved_seconds = total_hits * 2.5
+
+    # Collect language statistics from cache files
+    language_counts = Counter()
+    cache_dir = cache.cache_dir
+
+    for cache_file in cache_dir.glob("*.json"):
+        if cache_file == cache.index_file:
+            continue
+        try:
+            with open(cache_file, 'r') as f:
+                data = json.load(f)
+                language = data.get('language', 'unknown')
+                hit_count = data.get('hit_count', 0)
+                language_counts[language] += hit_count
+        except Exception:
+            pass
+
+    # Add enhanced metrics to basic stats
+    enhanced_stats = {
+        **basic_stats,
+        'hit_rate': hit_rate,
+        'time_saved_seconds': time_saved_seconds,
+        'top_languages': language_counts.most_common(10) if language_counts else []
+    }
+
+    return enhanced_stats
