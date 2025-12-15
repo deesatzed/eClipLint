@@ -1,0 +1,56 @@
+# LaTeX Formatter Plugin Example
+# Shows how to add support for academic/scientific document formatting
+
+[plugin]
+name = "latex-fmt"
+version = "1.0.0"
+description = "LaTeX document formatter with automatic indentation"
+author = "eClipLint Community"
+homepage = "https://github.com/cmhughes/latexindent.pl"
+
+[formatter]
+# Handle LaTeX and related formats
+languages = ["latex", "tex", "bibtex", "bib"]
+
+# Check if latexindent is installed
+check_command = "latexindent --version"
+
+# Format command using latexindent
+# -m modifies line breaks
+# -s silent mode
+format_command = "latexindent -m -s"
+
+# LaTeX formatter expects file input
+input_method = "file"
+
+# Outputs to stdout
+output_method = "stdout"
+
+# File extensions for temp files
+[formatter.parser_map]
+latex = "tex"
+tex = "tex"
+bibtex = "bib"
+bib = "bib"
+
+# LaTeX-specific settings
+[formatter.config]
+flags = [
+    "--local", "defaultSettings.yaml",  # Use local config if present
+    "--cruft", "/tmp/",                 # Backup directory
+    "--modifylinebreaks"                # Allow line break modifications
+]
+
+# Exit codes
+[formatter.exit_codes]
+success = [0]
+warning = [1]  # Warnings but formatted successfully
+error = [2, 3]
+
+# Performance notes
+[performance]
+batch_capable = false  # One file at a time
+cache_results = true   # Deterministic output
+parallel_safe = true   # Can run multiple instances
+speed_estimate = 200   # Slower for complex documents
+max_file_size = 5000   # Can handle large documents

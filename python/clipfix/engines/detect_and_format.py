@@ -4,9 +4,11 @@ import subprocess
 import tempfile
 import textwrap
 from pathlib import Path
+from typing import Tuple
 
 from .segmenter import regex_segment
 from .llm import llm_classify, llm_repair
+from .cache import cache_get, cache_put
 
 def _has_cmd(cmd: str) -> bool:
     return subprocess.call(["bash","-lc", f"command -v {cmd} >/dev/null 2>&1"]) == 0
@@ -38,47 +40,53 @@ def _run_file_formatter(cmd: list[str], content: str, ext: str) -> str:
             raise RuntimeError((proc.stderr or proc.stdout).strip())
         return p.read_text()
 
-def _format_code(kind: str, code: str) -> str:
+def _format_code(kind: str, code: str) -> Tuple[str, str]:
+    """
+    Format code and return (formatted_code, formatter_used).
+
+    Returns:
+        Tuple of (formatted_code, formatter_name)
+    """
     k = (kind or "").lower()
 
     if k == "json":
-        return _format_json(code)
+        return _format_json(code), "json.dumps"
     if k == "yaml":
-        return _format_yaml(code)
+        return _format_yaml(code), "ruamel.yaml"
 
     if k == "python":
         if _has_cmd("ruff"):
-            return _run_file_formatter(["ruff","format"], textwrap.dedent(code), "py")
+            return _run_file_formatter(["ruff","format"], textwrap.dedent(code), "py"), "ruff"
         if _has_cmd("black"):
-            return _run_file_formatter(["black","--quiet"], textwrap.dedent(code), "py")
-        return textwrap.dedent(code).strip() + "\n"
+            return _run_file_formatter(["black","--quiet"], textwrap.dedent(code), "py"), "black"
+        return textwrap.dedent(code).strip() + "\n", "dedent"
 
     if k == "bash":
         if _has_cmd("shfmt"):
-            return _run_file_formatter(["shfmt","-w","-i","2","-ci"], code, "sh")
-        return code
+            return _run_file_formatter(["shfmt","-w","-i","2","-ci"], code, "sh"), "shfmt"
+        return code, "none"
 
     if k == "rust":
         if _has_cmd("rustfmt"):
-            return _run_file_formatter(["rustfmt"], code, "rs")
-        return code
+            return _run_file_formatter(["rustfmt"], code, "rs"), "rustfmt"
+        return code, "none"
 
     if k in ("javascript","js"):
         if _has_cmd("prettier"):
-            return _run_file_formatter(["prettier","--write","--parser","babel"], code, "js")
-        return code
+            return _run_file_formatter(["prettier","--write","--parser","babel"], code, "js"), "prettier"
+        return code, "none"
 
     if k in ("typescript","ts"):
         if _has_cmd("prettier"):
-            return _run_file_formatter(["prettier","--write","--parser","typescript"], code, "ts")
-        return code
+            return _run_file_formatter(["prettier","--write","--parser","typescript"], code, "ts"), "prettier"
+        return code, "none"
 
     if k == "sql":
         if _has_cmd("sqlfluff"):
-            return _run_file_formatter(["sqlfluff","fix","--dialect","postgres"], code, "sql")
-        return code
+            return _run_file_formatter(["sqlfluff","fix","--dialect","postgres"], code, "sql"), "sqlfluff"
+        return code, "none"
 
-    return code
+    return code, "none"
 
 def _detect_kind(text: str) -> str:
     t = text.strip()
@@ -133,15 +141,31 @@ def process_text(text: str, allow_llm: bool) -> tuple[bool, str, str]:
             cls = llm_classify(seg.text)
             kind = cls.get("inner_kind") or cls.get("kind") or kind
 
+        # Check cache first
+        cached_result = cache_get(seg.text, kind)
+        if cached_result is not None:
+            # Cache hit!
+            cached_success, cached_output, cached_mode = cached_result
+            if cached_success:
+                out_parts.append(seg.prefix + cached_output + seg.suffix)
+                mode = cached_mode
+                continue
+
+        # Cache miss - format normally
         try:
-            formatted = _format_code(kind, seg.text)
+            formatted, formatter_used = _format_code(kind, seg.text)
+
+            # Store in cache if successful
+            cache_put(seg.text, kind, formatter_used, True, formatted, "formatted")
+
         except Exception as e:
             if not allow_llm:
                 return False, "", f"format error ({kind}): {e}"
             repaired = llm_repair(kind, seg.text)
             try:
-                formatted = _format_code(kind, repaired)
+                formatted, formatter_used = _format_code(kind, repaired)
                 mode = "repaired+formatted"
+                # Don't cache LLM repairs (non-deterministic)
             except Exception as e2:
                 return False, "", f"repair+format error ({kind}): {e2}"
 

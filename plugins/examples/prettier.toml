@@ -1,0 +1,75 @@
+# Prettier Plugin for eClipLint
+# This is an example plugin showing how to integrate prettier formatter
+
+[plugin]
+name = "prettier"
+version = "1.0.0"
+description = "JavaScript, TypeScript, JSON, YAML, CSS, HTML formatter"
+author = "eClipLint"
+homepage = "https://prettier.io/"
+
+[formatter]
+# Languages this formatter handles
+languages = ["javascript", "typescript", "json", "yaml", "css", "html", "jsx", "tsx"]
+
+# Command to check if formatter is installed
+check_command = "prettier --version"
+
+# The actual format command
+# Variables available:
+#   {code} = input code
+#   {file} = temp file path
+#   {language} = detected language
+#   {parser} = mapped parser name
+format_command = "prettier --parser {parser} --stdin"
+
+# How to pass code to formatter
+input_method = "stdin"  # Options: stdin, file, argument
+
+# How formatter returns formatted code
+output_method = "stdout"  # Options: stdout, file, in-place
+
+# Parser mapping (language -> prettier parser name)
+[formatter.parser_map]
+javascript = "babel"
+typescript = "typescript"
+json = "json"
+yaml = "yaml"
+css = "css"
+html = "html"
+jsx = "babel"
+tsx = "typescript"
+
+# Configuration flags
+[formatter.config]
+# Additional flags to pass to formatter
+flags = [
+    "--single-quote",
+    "--trailing-comma", "es5",
+    "--tab-width", "2",
+    "--semi", "true",
+    "--print-width", "100"
+]
+
+# Exit codes that indicate success
+[formatter.exit_codes]
+success = [0]
+parse_error = [2]
+config_error = [1]
+
+# Performance hints for optimal usage
+[performance]
+# Can process multiple files at once
+batch_capable = true
+
+# Results can be cached safely
+cache_results = true
+
+# Thread-safe for parallel execution
+parallel_safe = true
+
+# Estimated speed (ms per KB)
+speed_estimate = 50
+
+# Maximum recommended file size (KB)
+max_file_size = 1000

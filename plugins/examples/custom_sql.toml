@@ -1,0 +1,65 @@
+# Custom SQL Formatter Plugin Example
+# This shows how to create a plugin for a proprietary or custom formatter
+
+[plugin]
+name = "custom-sql"
+version = "1.0.0"
+description = "Company-specific SQL formatter with custom rules"
+author = "ACME Corporation"
+homepage = "https://internal.acme.com/sql-formatter"
+
+[formatter]
+# Languages this formatter handles
+# Can include proprietary language variants
+languages = ["sql", "plsql", "acme-sql", "stored-proc"]
+
+# Command to check if formatter is installed
+# This could be a company-internal tool
+check_command = "acme-sql-fmt --version"
+
+# The actual format command
+# Example using a proprietary formatter with specific flags
+format_command = "acme-sql-fmt --style=company --indent=4 --uppercase-keywords --stdin"
+
+# How to pass code to formatter
+input_method = "stdin"
+
+# How formatter returns formatted code
+output_method = "stdout"
+
+# Language-specific configurations
+[formatter.parser_map]
+sql = "ansi"
+plsql = "oracle"
+"acme-sql" = "proprietary"
+"stored-proc" = "procedure"
+
+# Company-specific configuration
+[formatter.config]
+# Custom flags for your organization's standards
+flags = [
+    "--max-line-length", "120",
+    "--align-columns",
+    "--company-header",
+    "--validate-schema"
+]
+
+# Environment variables to set when running formatter
+[formatter.env]
+ACME_SQL_CONFIG = "/usr/local/etc/acme-sql/config.json"
+ACME_LICENSE = "/usr/local/etc/acme-sql/license.key"
+
+# Exit codes
+[formatter.exit_codes]
+success = [0]
+parse_error = [1, 2]  # Multiple error codes possible
+validation_error = [3]
+license_error = [99]
+
+# Performance settings
+[performance]
+batch_capable = false  # Process one at a time
+cache_results = true   # Safe to cache
+parallel_safe = false  # Not thread-safe
+speed_estimate = 100   # Slower than prettier
+max_file_size = 500    # Keep files small
